@@ -7,11 +7,42 @@ output:
 
 
 ## Loading and preprocessing the data
+- Unzip and read the *activity.csv* file from working directory
+- Convert date from character vector to a date vector
+```{r}
+library(dplyr)
+
+data <- read.csv(unz("activity.zip", "activity.csv"), colClasses=c("numeric", "character", "numeric"))
+## convert character to Date
+data$date <- as.Date(data$date)
+
+```
 
 
 
 ## What is mean total number of steps taken per day?
 
+- Group steps by date variable
+- Sum the step by 
+
+```{r}
+steps_sum <- group_by(data, date) %>% summarise( total_steps=sum(steps))
+```
+
+Plot histogram of steps taken per day: 
+
+```{r}
+hist(steps_sum$total_steps
+     , breaks=4
+     , xlab="Total number of steps taken per day")
+```
+
+Report mean and median: 
+```{r}
+mean(steps_sum$total_steps, na.rm=TRUE)
+median(steps_sum$total_steps, na.rm=TRUE)
+
+```
 
 
 ## What is the average daily activity pattern?
