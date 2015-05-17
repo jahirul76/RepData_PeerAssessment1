@@ -1,11 +1,12 @@
 # Reproducible Research: Peer Assessment 1
 
-
 ## Loading and preprocessing the data
-- Unzip and read the *activity.csv* file from working directory
-- Convert date from character vector to a date vector
+- Unzip and read the `activity.csv` file from the zip file in the working directory
+- Convert date variable from character vector to a date vector
+
 
 ```r
+## Load required libraries
 library(dplyr)
 ```
 
@@ -27,35 +28,50 @@ library(dplyr)
 ```
 
 ```r
-data <- read.csv(unz("activity.zip", "activity.csv"), colClasses=c("numeric", "character", "numeric"))
+library(lattice)
+library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.1.3
+```
+
+```r
+hist_nb = 12
+
+data <- read.csv(
+    unz("activity.zip", "activity.csv"), 
+    colClasses=c("numeric", "character", "numeric"))
+
 ## convert character to Date
 data$date <- as.Date(data$date)
 ```
 
 
-
 ## What is mean total number of steps taken per day?
 
-- Group steps by date variable
-- Sum the step by 
+Summarise the data to calculate total steps taken per day
 
 
 ```r
-steps_date <- group_by(data, date) %>% summarise( total_steps=sum(steps))
+steps_date <- group_by(data, date) %>% summarise( total_steps=sum(steps) )
 ```
 
-Plot histogram of steps taken per day: 
+Now plot histogram of steps taken per day: 
 
 
 ```r
 hist(steps_date$total_steps
-     , breaks=15
+     , breaks=hist_nb
+     , main = paste0("breaks=",hist_nb)
+     , col = heat.colors(hist_nb, alpha = 1)
      , xlab="Total number of steps taken per day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
-Report mean and median: 
+Calculate the mean and median value: 
+
 
 ```r
 mean(steps_date$total_steps, na.rm=TRUE)
@@ -76,18 +92,13 @@ median(steps_date$total_steps, na.rm=TRUE)
 
 ## What is the average daily activity pattern?
 
+Calculate the **mean** `steps` at 5-mins `interval` and plot the result
+
+
 ```r
 steps_interval <- 
     group_by(data, interval) %>% summarise( mean=mean(steps, na.rm=TRUE))
 
-library(ggplot2)
-```
-
-```
-## Warning: package 'ggplot2' was built under R version 3.1.3
-```
-
-```r
 ggplot(steps_interval, aes(interval, mean)) + 
     geom_line(color = "red", size = 0.5) + 
     labs(title = "Average Number of Steps Taken Across All Days"
@@ -95,7 +106,9 @@ ggplot(steps_interval, aes(interval, mean)) +
          , y = "Average Number of Steps Taken")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+The maximum *mean* steps
 
 ```r
 steps_interval[which.max(steps_interval$mean), ]
@@ -108,10 +121,14 @@ steps_interval[which.max(steps_interval$mean), ]
 ## 1      835 206.1698
 ```
 
+**Observations**:
+
+The time seriese graph indicate, the person's daily activity increases between 7:30 - 9:30 am and peaks around 8:35am. 
+
 
 ## Imputing missing values
 
-- Total number of NAs in the data 
+Total number of NAs in the orginal dataset
 
 
 ```r
@@ -122,7 +139,7 @@ sum(is.na(data))
 ## [1] 2304
 ```
 
-Replace all NA with with mean values
+Create a new dataset, by replacing NA values from `steps` with mean (step) value at same `interval`.
 
 
 ```r
@@ -131,19 +148,18 @@ newData <- data
 for( i in  1:nrow(newData)  ) {
     interval <- newData$interval[i]
 
-    # print(paste('interval', interval))
-    
     if( is.na(newData$steps[i]) ) {
-        #print(paste('before', newData$steps[i]))
-        
         newData$steps[i] <- steps_interval[steps_interval$interval == interval, ]$mean
-        
-        #print(paste('after', newData$steps[i]))
         
     }
     
 }
+```
 
+Total number of NAs after imputing
+
+
+```r
 sum(is.na(newData))
 ```
 
@@ -151,14 +167,94 @@ sum(is.na(newData))
 ## [1] 0
 ```
 
+Plot showing histogram after imputing
+
+
 ```r
-steps_date <- group_by(newData, date) %>% summarise( total_steps=sum(steps))
+steps_date <- 
+    group_by(newData, date) %>% summarise( total_steps=sum(steps))
+
 hist(steps_date$total_steps
-     , breaks=15
+     , breaks=hist_nb
+     , main = paste0("breaks=",hist_nb)
+     , col = heat.colors(hist_nb, alpha = 1)
      , xlab="Total number of steps taken per day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
+
+The mean and median: 
+
+```r
+mean(steps_date$total_steps, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(steps_date$total_steps, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+**Observations**:
+
+* After imputing the mean value remains the same. However, median values increseas slightly from orginal. Mean and Median are now equal. 
+* On the new histogram's frequency density increase slightly where NA was replaced.
+
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Add a new weekday variable and partition the dataset into `weekday` and `weekend` using the `date` variable.
+
+
+```r
+## add two-level factoe variavle with weekday and weekend
+newData$weekday <- 
+    as.factor(ifelse(
+        weekdays(newData$date) %in% c("Saturday","Sunday"),"Weekend", "Weekday")
+        )
+
+## Check how many weekday and weekends in the dataset
+length(newData$weekday[newData$weekday =='Weekday'])
+```
+
+```
+## [1] 12960
+```
+
+```r
+length(newData$weekday[newData$weekday =='Weekend'])
+```
+
+```
+## [1] 4608
+```
+
+
+```r
+# Calculate mean by weekday and interval
+steps_date <- 
+    group_by(newData, weekday, interval) %>% summarise( mean=mean(steps))
+
+# xy panel plot
+xyplot(steps_date$mean ~ steps_date$interval | factor(steps_date$weekday), 
+       data=steps_date, 
+       layout = c(1, 2), 
+       type = 'l', 
+       main="Average Number of Steps Taken\nAveraged Across All Weekdays or Weekend",
+       xlab="5-Minute Interval (24h clock)",  
+       ylab="Average Number of Steps Taken")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+
+**Observation**: 
+ The plot indicates that the person on avarage more active during the weekend. 
+ 
