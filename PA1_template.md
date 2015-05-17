@@ -1,4 +1,9 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
 
 ## Loading and preprocessing the data
 - Unzip and read the `activity.csv` file from the zip file in the working directory
@@ -8,35 +13,9 @@
 ```r
 ## Load required libraries
 library(dplyr)
-```
-
-```
-## Warning: package 'dplyr' was built under R version 3.1.3
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following object is masked from 'package:stats':
-## 
-##     filter
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 library(lattice)
 library(ggplot2)
-```
 
-```
-## Warning: package 'ggplot2' was built under R version 3.1.3
-```
-
-```r
 hist_nb = 12
 
 data <- read.csv(
@@ -68,7 +47,7 @@ hist(steps_date$total_steps
      , xlab="Total number of steps taken per day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
 
 Calculate the mean and median value: 
 
@@ -106,7 +85,7 @@ ggplot(steps_interval, aes(interval, mean)) +
          , y = "Average Number of Steps Taken")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
 
 The maximum *mean* steps
 
@@ -181,7 +160,7 @@ hist(steps_date$total_steps
      , xlab="Total number of steps taken per day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
 
 
 The mean and median: 
@@ -253,7 +232,7 @@ xyplot(steps_date$mean ~ steps_date$interval | factor(steps_date$weekday),
        ylab="Average Number of Steps Taken")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
 
 **Observation**: 
  The plot indicates that the person on avarage more active during the weekend. 
